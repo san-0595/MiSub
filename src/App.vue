@@ -41,31 +41,46 @@ onMounted(async () => {
   
   // 检查伪装配置
   const currentPath = window.location.pathname;
+  console.log('[Disguise Check] Current path:', currentPath);
+  
   if (currentPath === '/' || currentPath === '') {
     try {
+      console.log('[Disguise Check] Fetching disguise config...');
       const response = await fetch('/api/disguise-config');
+      console.log('[Disguise Check] Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[Disguise Check] Config data:', data);
         const disguiseConfig = data.disguise;
         
         // 如果伪装功能启用,执行伪装逻辑
         if (disguiseConfig?.enabled) {
+          console.log('[Disguise Check] Disguise enabled! Type:', disguiseConfig.pageType);
+          
           if (disguiseConfig.pageType === 'redirect') {
             // 重定向到指定URL
+            console.log('[Disguise Check] Redirecting to:', disguiseConfig.redirectUrl);
             window.location.href = disguiseConfig.redirectUrl || 'https://www.bing.com';
             return;
           } else if (disguiseConfig.pageType === 'custom') {
             // 显示自定义HTML
+            console.log('[Disguise Check] Showing custom HTML');
             document.open();
             document.write(disguiseConfig.customHtml || '<h1>Welcome</h1>');
             document.close();
             return;
           } else if (disguiseConfig.pageType === 'builtin') {
             // 重定向到内置模板端点
+            console.log('[Disguise Check] Redirecting to builtin template:', disguiseConfig.builtinTemplate);
             window.location.href = `/disguise-template?type=${disguiseConfig.builtinTemplate || 'search'}`;
             return;
           }
+        } else {
+          console.log('[Disguise Check] Disguise disabled or not configured');
         }
+      } else {
+        console.error('[Disguise Check] API request failed:', response.status);
       }
     } catch (e) {
       console.error('Failed to check disguise config:', e);
